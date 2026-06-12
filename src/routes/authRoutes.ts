@@ -7,18 +7,15 @@ export const authRoutes = Router();
 
 authRoutes.get("/login", (req: Request, res: Response) => {
   if (req.session.userId && req.session.role === 2) {
-    res.redirect("/tarefas");
+    return res.redirect("/tarefas");
   };
   res.render("login", { flash: req.session.flash || null });
 });
 
-// 🎯 TODO 7: GET /registro — renderizar "registro" com flash
 authRoutes.get("/registro", (req: Request, res: Response) => {
-  requireAuth(req, res, () => {
-    if (req.session.role === 2) {
-      res.redirect("/tarefas");
-    };
-  })
+  if (req.session.userId && req.session.role === 2) {
+    return res.redirect("/tarefas");
+  };
   res.render("registro", { flash: req.session.flash || null });
 });
 
