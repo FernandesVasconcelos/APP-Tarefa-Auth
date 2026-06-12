@@ -4,6 +4,7 @@ import * as UserModel from "../models/userModel";
 import session from "express-session";
 
 export const authRoutes = Router();
+export const userModel = new UserModel.UserModel();
 
 authRoutes.get("/login", (req: Request, res: Response) => {
   if (req.session.userId && req.session.role === 2) {
@@ -20,10 +21,26 @@ authRoutes.get("/registro", (req: Request, res: Response) => {
 });
 
 // 🎯 TODO 8: POST /registro
-// Validar nome/email/senha (min 6 chars)
-// UserModel.registrar(nome, email, senha)
-// Se erro (email duplicado): flash + redirect /registro
-// Se ok: flash "Conta criada!" + redirect /login
+authRoutes.post("/registro", async (req: Request, res: Response) => {
+  if (req.session.userId && req.session.role === 2) {
+    return res.redirect("/tarefas");
+  }
+  userModel.registrar(req.body.nome, req.body.email, req.body.senha);
+  if (!req.body.nome || !req.body.email || !req.body.senha || req.body.senha.length < 6) {
+    req.session.flash = "Preencha todos os campos corretamente (senha mínimo 6 caracteres)";
+    return res.redirect("/registro");
+  }
+  userModel.buscarPorEmail(req.body.email).then((existingUser) => {
+    if (existingUser) {
+      req.session.flash = "Email já registrado";
+      return res.redirect("/registro");
+    }
+    userModel.registrar(req.body.nome, req.body.email, req.body.senha).then(() => {
+      req.session.flash = "Conta criada!";
+      return res.redirect("/login");
+    });
+  });
+});
 authRoutes.post("/registro", async (req: Request, res: Response) => {
   // TODO: implementar registro
   res.redirect("/registro");
