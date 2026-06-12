@@ -1,19 +1,14 @@
-// ============================================================
-// 🎯 TODO 5: Rotas de autenticação
-// ============================================================
 import { Router, Request, Response } from "express";
 import { requireAuth } from "../roles/guard";
 import * as UserModel from "../models/userModel";
+import session from "express-session";
 
 export const authRoutes = Router();
 
-// 🎯 TODO 6: GET /login — renderizar "login" com flash
 authRoutes.get("/login", (req: Request, res: Response) => {
-  requireAuth(req, res, () => {
-    if (req.session.role === 2) {
-      res.redirect("/tarefas");
-    };
-  });
+  if (req.session.userId && req.session.role === 2) {
+    res.redirect("/tarefas");
+  };
   res.render("login", { flash: req.session.flash || null });
 });
 
